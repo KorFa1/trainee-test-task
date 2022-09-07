@@ -82,20 +82,56 @@ class ShopImpl: Shop {
     
     func listProductsByName(searchString: String) -> Set<String> {
         var setOfProducts: Set<String> = []
-        if list.products.count < 10 {
-            setOfProducts.insert("Not Enough Products")
-            return setOfProducts
-        }
+        var insertedString: String
+        var counter: Int = 0
         for i in 0..<list.products.count {
             if list.products[i].name.contains(searchString) {
-
+                var flag = true
+                for j in 0..<list.products.count where i != j {
+                    if list.products[i].name == list.products[j].name {
+                        flag.toggle()
+                        break
+                    }
+                }
+                if counter == 10 {
+                    return setOfProducts
+                } else if flag {
+                    insertedString = list.products[i].name
+                    setOfProducts.insert(insertedString)
+                    counter += 1
+                } else {
+                    insertedString = list.products[i].producer + " - " + list.products[i].name
+                    setOfProducts.insert(insertedString)
+                    counter += 1
+                }
             }
         }
+        return setOfProducts
     }
     
     
     func listProductsByProducer(searchString: String) -> [String] {
-        <#code#>
+        var arrayOfProducts: [Product] = []
+        var arrayOfNames: [String] = []
+        var counter: Int = 0
+        for i in 0..<list.products.count {
+            if list.products[i].producer.contains(searchString) {
+                arrayOfProducts.append(list.products[i])
+                counter += 1
+            }
+            if counter == 10 {
+                arrayOfProducts = arrayOfProducts.sorted(by: { $0.producer < $1.producer })
+                for j in 0..<arrayOfProducts.count {
+                    arrayOfNames.append(arrayOfProducts[j].name)
+                }
+                return arrayOfNames
+            }
+        }
+        arrayOfProducts = arrayOfProducts.sorted(by: { $0.producer < $1.producer })
+        for k in 0..<arrayOfProducts.count {
+            arrayOfNames.append(arrayOfProducts[k].name)
+        }
+        return arrayOfNames
     }
     
 }
