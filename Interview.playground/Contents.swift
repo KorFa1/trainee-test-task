@@ -42,39 +42,23 @@ protocol Shop {
 }
 
 // TODO: your implementation goes here
-
-class ListOfProducts {
-    var products: [Product] = []
-}
-
 class ShopImpl: Shop {
     
-    var list = ListOfProducts()
+    var products: [String: Product] = [:]
     
     func addNewProduct(product: Product) -> Bool {
-        if list.products.isEmpty {
-            list.products.append(product)
+        if products[product.id] == nil {
+            products[product.id] = product
             return true
         }
-        for i in 0..<list.products.count {
-            if product.id == list.products[i].id {
-                return false
-            }
-        }
-        list.products.append(product)
-        return true
+        return false
     }
     
     
     func deleteProduct(id: String) -> Bool {
-        if list.products.isEmpty {
-            return false
-        }
-        for i in 0..<list.products.count {
-            if list.products[i].id == id {
-                list.products.remove(at: i)
-                return true
-            }
+        if products[id] != nil {
+            products[id] = nil
+            return true
         }
         return false
     }
@@ -82,61 +66,27 @@ class ShopImpl: Shop {
     
     func listProductsByName(searchString: String) -> Set<String> {
         var setOfProducts: Set<String> = []
-        var insertedString: String
-        var counter: Int = 0
-        for i in 0..<list.products.count {
-            if list.products[i].name.contains(searchString) {
-                var flag = true
-                for j in 0..<list.products.count where i != j {
-                    if list.products[i].name == list.products[j].name {
-                        flag.toggle()
-                        break
-                    }
-                }
-                if counter == 10 {
-                    return setOfProducts
-                } else if flag {
-                    insertedString = list.products[i].name
-                    setOfProducts.insert(insertedString)
-                    counter += 1
-                } else {
-                    insertedString = list.products[i].producer + " - " + list.products[i].name
-                    setOfProducts.insert(insertedString)
-                    counter += 1
-                }
+        let filteredProducts = products.filter({$0.value.name.contains(searchString)})
+        
+        filteredProducts.forEach({ product in
+            let counter = filteredProducts.filter({$0.value.name == product.value.name})
+            if counter.count != 1 {
+                setOfProducts.insert(product.value.producer + " - " + product.value.name)
+            } else {
+                setOfProducts.insert(product.value.name)
             }
-        }
-        return setOfProducts
+        })
+        return Set(setOfProducts.prefix(10))
     }
     
     
     func listProductsByProducer(searchString: String) -> [String] {
-        var arrayOfProducts: [Product] = []
-        var arrayOfNames: [String] = []
-        var counter: Int = 0
-        for i in 0..<list.products.count {
-            if list.products[i].producer.contains(searchString) {
-                arrayOfProducts.append(list.products[i])
-                counter += 1
-            }
-            if counter == 10 {
-                arrayOfProducts = arrayOfProducts.sorted(by: { $0.producer < $1.producer })
-                for j in 0..<arrayOfProducts.count {
-                    arrayOfNames.append(arrayOfProducts[j].name)
-                }
-                return arrayOfNames
-            }
-        }
-        arrayOfProducts = arrayOfProducts.sorted(by: { $0.producer < $1.producer })
-        for k in 0..<arrayOfProducts.count {
-            arrayOfNames.append(arrayOfProducts[k].name)
-        }
-        return arrayOfNames
+        var arrayOfProducts: [String] = []
+        products.filter({$0.value.producer.contains(searchString)}).sorted(by: {$0.value.producer < $1.value.producer}).forEach({arrayOfProducts.append($0.value.name)})
+        return Array(arrayOfProducts.prefix(10))
     }
-    
 }
 
-// TODO: your implementation ends here
 
 func test(lib: Shop) {
     assert(!lib.deleteProduct(id: "1"))
